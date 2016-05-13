@@ -15,6 +15,7 @@ This script makes some assumptions so please use with caution and check the sour
 4. Python libraries 
   * [digitalocean](https://github.com/koalalorenzo/python-digitalocean) (For API calls to DO)
   * [keyring](https://github.com/jaraco/keyring) (Optional, for saving the API key inside the mac keychain or other keyrings)
+5. Set a region near to you (Line 37 in the script), default is Frankfurt germany
 
 ## Installation
 1. `pip install python-digitalocean`
