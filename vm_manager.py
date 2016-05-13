@@ -4,13 +4,20 @@ import time
 from time import strftime
 import digitalocean
 import sys
-import keyring
+try:
+	import keyring
+	keychain = True
+except ImportError:
+	keychain = False
 import logging
 import argparse
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)-2s %(filename)s:%(lineno)s - %(funcName)5s()] %(message)s")
 
-apikey = keyring.get_password("DO_API", "DO_API")
+apikey = None
+
+if keychain:
+	apikey = keyring.get_password("DO_API", "DO_API")
 #apikey = "myapikeyhere"
 
 
@@ -42,9 +49,16 @@ args = parser.parse_args()
 if args.apikey is not None:
 	apikey = args.apikey
 
+if apikey is None:
+	logging.error("No apikey given!!")
+	sys.exit(0)
+
 if args.command[0] == "set_API":
-	keyring.set_password("DO_API", "DO_API", apikey)
-	logging.info("Saved API key to keychain: " + apikey)
+	if keychain:
+		keyring.set_password("DO_API", "DO_API", apikey)
+		logging.info("Saved API key to keychain: " + apikey)
+	else:
+		logging.error("Missing keyring python libary!")
 
 
 if args.command[0] == "start":
