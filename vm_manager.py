@@ -95,7 +95,7 @@ if args.command[0] == "status":
 
 
 if args.command[0] == "stop":
-
+	getManager()
 	factorio = my_droplets[0]
 	snapshot_name = strftime("%d_%b_%Y_%H_%M_%S")
 
