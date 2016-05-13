@@ -12,8 +12,8 @@ This script makes some assumptions so please use with caution and check the sour
 1. [digitalocean.com] account and [apikey (Personal Access Token)](https://www.digitalocean.com/community/tutorials/how-to-use-the-digitalocean-api-v2) 
 2. Python 2.7
 3. Python libraries 
-  *[digitalocean](https://github.com/koalalorenzo/python-digitalocean) (For API calls to DO)
-  *[keyring](https://github.com/jaraco/keyring) (Optional, for saving the API key inside the mac keychain or other keyrings)
+  * [digitalocean](https://github.com/koalalorenzo/python-digitalocean) (For API calls to DO)
+  * [keyring](https://github.com/jaraco/keyring) (Optional, for saving the API key inside the mac keychain or other keyrings)
 
 ## Installation
 1. `pip install python-digitalocean`
@@ -28,7 +28,8 @@ This script makes some assumptions so please use with caution and check the sour
 - `python vm_manager.py stop (apikey)`       stops the VM takes a snapshot and destroys VM. Deletes oldest snapshot if there are more than two.
 
 
-```$ python vm_manager.py status
+```
+$ python vm_manager.py status
 2016-05-13 11:00:46,152 [INFO vm_manager.py:27 - getManager()] Getting manager...
 2016-05-13 11:00:48,031 [INFO vm_manager.py:84 - <module>()] Running droplets:[]
 2016-05-13 11:00:48,505 [INFO vm_manager.py:88 - <module>()] Snapshots:[< 17280127 Ubuntu 12_May_2016_00_34_19 >, < 17297312 Ubuntu 12_May_2016_23_42_28 >]
