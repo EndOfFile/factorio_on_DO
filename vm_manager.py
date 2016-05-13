@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
+
 import time
 from time import strftime
 import digitalocean
@@ -16,10 +17,10 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)-2s %(f
 logging.getLogger('requests').setLevel(logging.WARNING)
 
 apikey = None
+#apikey = "myapikeyhere"
 
 if keychain:
 	apikey = keyring.get_password("DO_API", "DO_API")
-#apikey = "myapikeyhere"
 
 
 def getManager():
@@ -42,7 +43,7 @@ def getManager():
 
 # Parse arguments
 parser = argparse.ArgumentParser(description='Control script for starting VM on digitalocean')
-parser.add_argument('command', metavar='command', type=str, nargs=1, help='status, start, stop, set_API')
+parser.add_argument('command', metavar='command', type=str, nargs=1, help='status, start, stop, setAPIKEY')
 parser.add_argument('apikey', metavar='apikey', type=str, nargs='?', help='Digitalocean API key')
 args = parser.parse_args()
 
@@ -54,7 +55,7 @@ if apikey is None:
 	logging.error("No apikey given!!")
 	sys.exit(0)
 
-if args.command[0] == "set_API":
+if args.command[0] == "setAPIKEY":
 	if keychain:
 		keyring.set_password("DO_API", "DO_API", apikey)
 		logging.info("Saved API key to keychain: " + apikey)
