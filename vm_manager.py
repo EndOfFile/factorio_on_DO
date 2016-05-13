@@ -12,7 +12,8 @@ except ImportError:
 import logging
 import argparse
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)-2s %(filename)s:%(lineno)s - %(funcName)5s()] %(message)s")
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)-2s %(filename)s:%(lineno)s] %(message)s")
+logging.getLogger('requests').setLevel(logging.WARNING)
 
 apikey = None
 
