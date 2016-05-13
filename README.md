@@ -26,8 +26,8 @@ This script deletes VMs and snapshots so please use with caution and check the s
 2. Save your apikey inside script or always call the script with the apikey as second argument
 
 ## Usage
-- `python vm_manager.py status (apikey)`   prints all running VMs and all saved snapshots. Deletes oldest snapshot if there are more than two.
-- `python vm_manager.py start (apikey)`      starts the factorio VM based on the oldes snapshot
+- `python vm_manager.py status (apikey)`   prints all running VMs and all saved snapshots. 
+- `python vm_manager.py start (apikey)`      starts the factorio VM based on the oldes snapshot.
 - `python vm_manager.py stop (apikey)`       stops the VM takes a snapshot and destroys VM. Deletes oldest snapshot if there are more than two.
 
 
