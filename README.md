@@ -2,11 +2,12 @@
 Simple python script for managing a VM on digitalocean.com for running a headless factorio server.
 
 # WARNING
-This script makes some assumptions so please use with caution and check the source first!!
+This script deletes VMs and snapshots so please use with caution and check the source first!!
 
-1. Since i am using DO only for my factorio server the script assumes that there is only ONE VM running
-2. If there are more than 2 snapshots on DO it will DELETE the oldest (If you have more than 5 Snapshots you have to pay for them)
-3. The VM gets created based on the newest snapshot
+1. If there are more than 2 snapshots that match the naming scheme for factorio vm snapshots the oldest one gets deleted (If you have more than 5 Snapshots you have to pay for them)
+2. The VM gets created based on the newest general snapshot! (Planed to use the newest matching one)
+3. Standard name for the VM is Factorio, if you have already one VM with this name change vm_name inside the script!!
+4. Snapshots standard name are date_time-vm_name
 
 ## Requirements
 1. [digitalocean.com](digitalocean.com) account and [apikey (Personal Access Token)](https://www.digitalocean.com/community/tutorials/how-to-use-the-digitalocean-api-v2) 
