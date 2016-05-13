@@ -43,13 +43,35 @@ def getManager():
 	snapshot = manager.get_my_images()[-1] # Get the latest snapshot saved
 	key = manager.get_all_sshkeys()[-1] # Get the latest ssh key
 
+	image = getLatestFactorioImage()
+
+	if image is None:
+		logging.error("Could not find latest image of " + vm_name)
+		sys.exit(0)
+
 	droplet = digitalocean.Droplet(token=apikey,
 		name=vm_name,
 		region='fra1',  # fra1 = Frankfurt 1, alternativ nyc1 = New York  (Has to be the same region where the snapshot is saved!!)
-		image=manager.get_my_images()[-1].id, # Last snapshot TODO: Change to last matching snapshot
+		image=image.id, # Latest matching snapshot
 		size_slug='1gb', # Size of the VM
 		backups=False,
 		ssh_keys=[key])
+
+
+def getLatestFactorioImage():
+	factorio_images = []
+
+	for image in manager.get_my_images():
+		try:
+			time = datetime.strptime(image.name, snapshot_name)
+			factorio_images.append(image)
+		except ValueError:
+			pass
+	if len(factorio_images) > 0:
+		logging.info("Latest " + vm_name + " image: " + factorio_images[-1].name)
+		return factorio_images[-1]
+	else:
+		return None
 
 
 def getFactorioSnapshots():
@@ -64,7 +86,6 @@ def getFactorioSnapshots():
 		except ValueError:
 			pass
 	return factorio_snapshots
-
 
 def cleanUpSnapshots():
 	all_snapshots = manager.get_my_images()
