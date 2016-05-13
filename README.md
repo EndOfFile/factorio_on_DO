@@ -19,7 +19,7 @@ This script makes some assumptions so please use with caution and check the sour
 ## Installation
 1. `pip install python-digitalocean`
 2. `pip install keyring` (Optional)
-  * Save apikey with keyring: python vm_manager.py setAPIKEY yourkeygoeshere
+  * Save apikey with keyring: `python vm_manager.py setAPIKEY yourkeygoeshere`
 
 2. Save your apikey inside script or always call the script with the apikey as second argument
 
