@@ -4,28 +4,28 @@ Simple python script for managing a VM on digitalocean.com for running a headles
 # WARNING
 This script makes some assumptions so please use with caution and check the source first!!
 
-1.) Since i am using DO only for my factorio the script assumes that there is only ONE VM running
-2.) If there are more than 2 snapshots on DO it will DELETE the oldest (If you have more than 5 Snapshots you have to pay for them)
-3.) The VM gets created based on the newest snapshot
+1. Since i am using DO only for my factorio the script assumes that there is only ONE VM running
+2. If there are more than 2 snapshots on DO it will DELETE the oldest (If you have more than 5 Snapshots you have to pay for them)
+3. The VM gets created based on the newest snapshot
 
 ## Requirements
-1. digitalocean.com account and [apikey (Personal Access Token)](https://www.digitalocean.com/community/tutorials/how-to-use-the-digitalocean-api-v2) 
+1. [digitalocean.com] account and [apikey (Personal Access Token)](https://www.digitalocean.com/community/tutorials/how-to-use-the-digitalocean-api-v2) 
 2. Python 2.7
 3. Python libraries 
-..*[digitalocean](https://github.com/koalalorenzo/python-digitalocean) (For API calls to DO)
-..*[keyring](https://github.com/jaraco/keyring) (Optional, for saving the API key inside the mac keychain or other keyrings)
+  *[digitalocean](https://github.com/koalalorenzo/python-digitalocean) (For API calls to DO)
+  *[keyring](https://github.com/jaraco/keyring) (Optional, for saving the API key inside the mac keychain or other keyrings)
 
 ## Installation
-1. pip install python-digitalocean
-2. pip install keyring (Optional)
-..* Save apikey with keyring: python vm_manager.py setAPIKEY yourkeygoeshere
+1. `pip install python-digitalocean`
+2. `pip install keyring` (Optional)
+  * Save apikey with keyring: python vm_manager.py setAPIKEY yourkeygoeshere
 
 2. Save your apikey inside script or always call the script with the apikey as second argument
 
 ## Usage
-- python vm_manager.py status (apikey)   prints all running VMs and all saved snapshots. Deletes oldest snapshot if there are more than two.
-- python vm_manager.py start (apikey)      starts the factorio VM based on the oldes snapshot
-- python vm_manager.py stop (apikey)       stops the VM takes a snapshot and destroys VM. Deletes oldest snapshot if there are more than two.
+- `python vm_manager.py status (apikey)`   prints all running VMs and all saved snapshots. Deletes oldest snapshot if there are more than two.
+- `python vm_manager.py start (apikey)`      starts the factorio VM based on the oldes snapshot
+- `python vm_manager.py stop (apikey)`       stops the VM takes a snapshot and destroys VM. Deletes oldest snapshot if there are more than two.
 
 
 ```$ python vm_manager.py status
