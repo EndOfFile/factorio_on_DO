@@ -5,6 +5,7 @@ import argparse
 import logging
 import subprocess
 from pexpect import pxssh
+import sys
 
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)-2s %(filename)s:%(lineno)s] %(message)s")
@@ -36,10 +37,17 @@ class droplet_manager(object):
 
 	def sshConnect(self):
 		self.sshConnection = pxssh.pxssh()
-		self.sshConnection.login(self.ip_adress, 'root', ssh_key=self.ssh_key)
+		try:
+			self.sshConnection.login(self.ip_adress, 'root', ssh_key=self.ssh_key)
+		except pxssh.ExceptionPxssh, e:
+			print e
+			sys.exit(0)
+
+	def sshExit(self):
+		self.sshConnection.logout()
 
 	#TODO: Capsule remote cmd inside ssh connection pxssh (no subproccess, only pxssh)
-	#TODO: Keep runCommand for local commands like scp savegames/mods and ssh key generation move to extra class? Nedded here for savegames/mods and in vm_manager for ssh key generation
+	#TODO: Keep runCommand for local commands. Nedded here for savegames/mods and in vm_manager for ssh key generation
 	def runCommand(self, cmd):
 		"""
 		Run given command over ssh connection and return result
@@ -182,4 +190,9 @@ if __name__ == '__main__':
 	if args.verbose:
 		logging.getLogger().setLevel(logging.DEBUG)
 		logging.debug("Verbose logging enabled")
+
+	drop = droplet_manager(args.ip_adress, args.ssh_key)
+
+
+	drop.sshExit()
 
