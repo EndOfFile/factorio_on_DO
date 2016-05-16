@@ -16,6 +16,7 @@ import argparse
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)-2s %(filename)s:%(lineno)s] %(message)s")
 logging.getLogger('requests').setLevel(logging.WARNING)
+logging.getLogger('digitalocean').setLevel(logging.WARNING)
 
 ####################################################################################################
 ##### Config here
@@ -37,11 +38,25 @@ if keychain:
 def getManager():
 	global my_droplets, snapshot, manager, droplet
 	logging.info("Getting manager...")
+
 	manager = digitalocean.Manager(token=apikey)
 	my_droplets = manager.get_all_droplets()
 
-	snapshot = manager.get_my_images()[-1] # Get the latest snapshot saved
-	key = manager.get_all_sshkeys()[-1] # Get the latest ssh key
+	# Get ssh key
+	# Note: ssh key names are NOT unique, just take the first one
+	key = None
+	for k in manager.get_all_sshkeys():
+		if k.name == 'DO_' + vm_name:
+			if key is None:
+				key = k
+			else:
+				logging.error("There are multiple ssh keys with name: " + 'DO_' + vm_name + " on DO, using first found!")
+				break
+
+	if key is None:
+		logging.error("Got no SSH key!")
+		sys.exit(0)
+	#TODO: For new Droplet create and upload new key if key doesnt exist on DO
 
 	image = getLatestFactorioImage()
 
@@ -113,10 +128,16 @@ def getFactorioVM():
 
 # Parse arguments
 parser = argparse.ArgumentParser(description='Control script for starting VM on digitalocean')
-parser.add_argument('command', metavar='command', type=str, nargs=1, help='status, start, stop, setAPIKEY')
-parser.add_argument('apikey', metavar='apikey', type=str, nargs='?', help='Digitalocean API key')
+parser.add_argument(dest='command', type=str, help='status, start, stop, setAPIKEY')
+parser.add_argument(dest='apikey', type=str, nargs='?', help='Digitalocean API key')
+parser.add_argument('-v', '--verbose', action='store_true', dest='verbose',
+					help="Print debug messages")
+
 args = parser.parse_args()
 
+if args.verbose:
+	logging.getLogger().setLevel(logging.DEBUG)
+	logging.debug("Verbose logging enabled")
 
 if args.apikey is not None:
 	apikey = args.apikey
@@ -125,7 +146,7 @@ if apikey is None:
 	logging.error("No apikey given!!")
 	sys.exit(0)
 
-if args.command[0] == "setAPIKEY":
+if args.command == "setAPIKEY":
 	if keychain:
 		keyring.set_password("DO_API", "DO_API", apikey)
 		logging.info("Saved API key to keychain: " + apikey)
@@ -133,7 +154,7 @@ if args.command[0] == "setAPIKEY":
 		logging.error("Missing keyring python libary!")
 
 
-if args.command[0] == "start":
+if args.command == "start":
 	getManager()
 	logging.info(str(droplet))
 	droplet.create()
@@ -150,18 +171,18 @@ if args.command[0] == "start":
 	logging.info("Droplet ip adress:" + str(droplet.ip_address))
 
 
-if args.command[0] == "status":
+if args.command == "status":
 	getManager()
-	logging.info("Running droplets: " + str(my_droplets))
+	logging.debug("Running droplets: " + str(my_droplets))
 	logging.info("Factorio droplet: " + str(getFactorioVM()))
-	for drop in my_droplets:
-		logging.info(str(drop.load()))
+	#for drop in my_droplets:
+	#	logging.info(str(drop.load()))
 	all_snapshots = manager.get_my_images()
-	logging.info("Snapshots:" + str(all_snapshots))
+	logging.debug("Snapshots:" + str(all_snapshots))
 	logging.info("Snapshots of " + vm_name + ": " + str(getFactorioSnapshots()))
 
 
-if args.command[0] == "stop":
+if args.command == "stop":
 	getManager()
 
 	# Find factorio VM
