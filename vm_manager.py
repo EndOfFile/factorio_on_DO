@@ -21,18 +21,20 @@ logging.getLogger('digitalocean').setLevel(logging.WARNING)
 ####################################################################################################
 ##### Config here
 ####################################################################################################
-apikey = None
+apikey = None # Digitalocean api key https://www.digitalocean.com/community/tutorials/how-to-use-the-digitalocean-api-v2
 #apikey = "myapikeyhere"
 
-vm_name = "Factorio"
-snapshot_name = "%d_%b_%Y_%H_%M_%S-" + vm_name
-max_factorio_snapshots = 2
+vm_name = 'Factorio' # VM name that runs factorio server
+vm_region = 'fra1' # fra1 = Frankfurt 1, alternativ nyc1, nyc2, nyc3 = New York, lon1 = London  (Has to be the same region where the snapshot is saved!!)
+vm_size = '1gb' # Size of VM has to match snapshot or be bigger
+snapshot_name = "%d_%b_%Y_%H_%M_%S-" + vm_name # 13_May_2016_13_08_21-Factorio
+max_factorio_snapshots = 2 # Maximal number of snapshots to keep of vm_name VM
 
 ####################################################################################################
 ####################################################################################################
 
 if keychain:
-	apikey = keyring.get_password("DO_API", "DO_API")
+	apikey = keyring.get_password('DO_API', 'DO_API')
 
 
 def getManager():
@@ -66,9 +68,9 @@ def getManager():
 
 	droplet = digitalocean.Droplet(token=apikey,
 		name=vm_name,
-		region='fra1',  # fra1 = Frankfurt 1, alternativ nyc1 = New York  (Has to be the same region where the snapshot is saved!!)
+		region=vm_region,
 		image=image.id, # Latest matching snapshot
-		size_slug='1gb', # Size of the VM
+		size_slug=vm_size, # Size of the VM
 		backups=False,
 		ssh_keys=[key])
 
