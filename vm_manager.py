@@ -14,9 +14,8 @@ except ImportError:
 import logging
 import argparse
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)-2s %(filename)s:%(lineno)s] %(message)s")
-logging.getLogger('requests').setLevel(logging.WARNING)
-logging.getLogger('digitalocean').setLevel(logging.WARNING)
+__version__ = '0.1'
+
 
 ####################################################################################################
 ##### Config here
@@ -32,6 +31,12 @@ max_factorio_snapshots = 2 # Maximal number of snapshots to keep of vm_name VM
 
 ####################################################################################################
 ####################################################################################################
+
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)-2s %(filename)s:%(lineno)s] %(message)s")
+logging.getLogger('requests').setLevel(logging.WARNING)
+logging.getLogger('digitalocean').setLevel(logging.WARNING)
+
 
 if keychain:
 	apikey = keyring.get_password('DO_API', 'DO_API')
@@ -112,7 +117,6 @@ def cleanUpSnapshots():
 	logging.info("Out of " + str(len(all_snapshots)) + " found " + str(len(factorio_snapshots)) + " factorio snapshots")
 
 	if len(factorio_snapshots) > max_factorio_snapshots:
-		logging.info("CLEANING FACTORIO SNAPSHOTS")
 		factorio_snapshots[0].destroy()  # Deletes oldest snapshot
 	logging.info("DONE")
 
@@ -134,6 +138,12 @@ parser.add_argument(dest='command', type=str, help='status, start, stop, setAPIK
 parser.add_argument(dest='apikey', type=str, nargs='?', help='Digitalocean API key')
 parser.add_argument('-v', '--verbose', action='store_true', dest='verbose',
 					help="Print debug messages")
+parser.add_argument('-ns', '--no-snapshot', action='store_true', dest='no_snapshot',
+					help="Save no snapshot when stopping droplet")
+parser.add_argument('-nd', '--no-destroy', action='store_true', dest='no_destroy',
+					help="Don't destroy droplet after stopping")
+parser.add_argument('-nc', '--no-cleanup', action='store_true', dest='no_cleanup',
+                    help="No snapshot cleanup")
 
 args = parser.parse_args()
 
@@ -206,26 +216,30 @@ if args.command == "stop":
 				action.load()
 				logging.info(str(action.status))
 
-	logging.info("TAKE SNAPSHOT")
-	factorio.take_snapshot(strftime(snapshot_name), power_off=True)
-	actions = factorio.get_actions()
-	for action in actions:
-		action.load()
-		# Once it shows complete, droplet is up and running
-		while "progress" in action.status:
-			time.sleep(5)
+	if not args.no_snapshot:
+		logging.info("TAKE SNAPSHOT")
+		factorio.take_snapshot(strftime(snapshot_name), power_off=True)
+		actions = factorio.get_actions()
+		for action in actions:
 			action.load()
-			logging.info(action.status)
+			# Once it shows complete, droplet is up and running
+			while "progress" in action.status:
+				time.sleep(5)
+				action.load()
+				logging.info(action.status)
 
-	logging.info("DESTROY")
-	factorio.destroy()
-	actions = factorio.get_actions()
-	for action in actions:
-		action.load()
-		# Once it shows complete, droplet is up and running
-		while "progress" in action.status:
-			time.sleep(5)
+	if not args.no_destroy:
+		logging.info("DESTROY")
+		factorio.destroy()
+		actions = factorio.get_actions()
+		for action in actions:
 			action.load()
-			logging.info(str(action.status))
+			# Once it shows complete, droplet is up and running
+			while "progress" in action.status:
+				time.sleep(5)
+				action.load()
+				logging.info(str(action.status))
 
-	cleanUpSnapshots()
+	if not args.no_cleanup:
+		logging.info("CLEANING FACTORIO SNAPSHOTS")
+		cleanUpSnapshots()
