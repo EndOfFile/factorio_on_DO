@@ -65,7 +65,16 @@ def getManager():
 		sys.exit(0)
 	#TODO: For new Droplet create and upload new key if key doesnt exist on DO
 
-	image = getLatestFactorioImage()
+	image = None
+
+	if args.create:
+		for img in manager.get_all_images():
+			if img.distribution == 'Ubuntu' and img.name == '15.10 x64':
+				image = img
+				logging.debug("Loading new system image of Ubuntu 15.10 x64")
+				break
+	else:
+		image = getLatestFactorioImage()
 
 	if image is None:
 		logging.error("Could not find latest image of " + vm_name)
@@ -138,6 +147,8 @@ parser.add_argument(dest='command', type=str, help='status, start, stop, setAPIK
 parser.add_argument(dest='apikey', type=str, nargs='?', help='Digitalocean API key')
 parser.add_argument('-v', '--verbose', action='store_true', dest='verbose',
 					help="Print debug messages")
+parser.add_argument('-c', '--create', action='store_true', dest='create',
+                    help="If no ssh or droplet found create both")
 parser.add_argument('-ns', '--no-snapshot', action='store_true', dest='no_snapshot',
 					help="Save no snapshot when stopping droplet")
 parser.add_argument('-nd', '--no-destroy', action='store_true', dest='no_destroy',
@@ -181,6 +192,9 @@ if args.command == "start":
 			logging.info(str(action.status))
 	droplet.load()
 	logging.info("Droplet ip adress:" + str(droplet.ip_address))
+
+	if args.create: # TODO: Install factorio + service on new droplet
+		pass
 
 
 if args.command == "status":
