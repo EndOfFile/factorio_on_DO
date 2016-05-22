@@ -9,15 +9,6 @@ import sys
 
 __version__ = '0.1'
 
-####################################################################################################
-##### Config here
-####################################################################################################
-
-factorio_directory = '/opt/factorio'
-
-####################################################################################################
-####################################################################################################
-
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)-2s %(filename)s:%(lineno)s] %(message)s")
 
 parser = argparse.ArgumentParser(description="Installs factorio headless server")
@@ -38,14 +29,15 @@ parser.add_argument('-S', '--factorio-service-path', default='/opt/factorio-init
 					help="Factorio init script path")
 logging.info("Droplet manager version " + __version__)
 
+
 class droplet_manager(object):
 	"""
 	Class for managing factory status and setup on a droplet directly over SSH connection.
 	"""
-	def __init__(self, ip_address, key_file, factorio_directory):
+	def __init__(self, ip_address, key_file, factorio_directory='/opt/factorio', factorio_user='factorio'):
 		self.factorio_directory = factorio_directory
+		self.factorio_user = factorio_user
 		self.ssh_key = key_file
-		# TODO: Setup SSH Connection
 		self.ip_adress = ip_address
 		self.mods_droplet = [] # Mods on droplet
 		self.saveGames_droplet = [] # Savegames on droplet
@@ -66,8 +58,6 @@ class droplet_manager(object):
 	def sshExit(self):
 		self.sshConnection.logout()
 
-	#TODO: Capsule remote cmd inside ssh connection pxssh (no subproccess, only pxssh)
-	#TODO: Keep runCommand for local commands. Nedded here for savegames/mods and in vm_manager for ssh key generation
 	def runCommand(self, cmd):
 		"""
 		Run given command over ssh connection and return result
@@ -156,10 +146,10 @@ class droplet_manager(object):
 		Returns a list of all files in path
 
 		Args:
-		    path (str): Path to folder
+			path (str): Path to folder
 
 		Returns:
-		    list of strings
+			list of strings
 		"""
 		logging.debug("Getting file list for: " + path)
 		self.changeFolder(path)
@@ -168,6 +158,23 @@ class droplet_manager(object):
 		file_list = self.sshConnection.before.split()
 		del file_list[0]  # Removes ls command
 		return file_list
+
+	def chown(self, path, user):
+		"""
+		Do chown -R for path
+
+		Args:
+			path (str): Path to chown
+			user (str): User to change to
+
+		Returns:
+			None
+		"""
+		logging.debug("Chown: " + path + " to " + user)
+		self.sshConnection.sendline('chown -R ' + user + ':' + user + " " + path)
+		self.sshConnection.prompt()
+		if 'No such' or 'illegal' in self.sshConnection.before:
+			logging.error("Error while chown: " + self.sshConnection.before)
 
 
 	def downloadFileOnDroplet(self, url, destination):
@@ -186,8 +193,17 @@ class droplet_manager(object):
 			logging.debug(self.sshConnection.before)
 
 	def downloadFileFromDroplet(self, remote_path):
+		"""
+		Download a file from droplet to local machine
+
+		Args:
+			remote_path (str): Remote path to file
+
+		Returns:
+			None
+		"""
 		logging.debug("Scp from Droplet: " + remote_path)
-		# TODO: Add progress bar
+		# TODO: Add progress bar + for upload
 		out = self.runCommand('scp -i ' + self.ssh_key + ' root@' + self.ip_adress + ':' + remote_path)
 
 		if 'No such file' in out:
@@ -197,6 +213,16 @@ class droplet_manager(object):
 		return True
 
 	def uploadFileToDroplet(self, local_path, remote_path):
+		"""
+		Upload a file from local machine to droplet
+
+		Args:
+			local_path (str): Local path to file
+			remote_path (str): Remote path to file
+
+		Returns:
+			None
+		"""
 		logging.debug("Scp to Droplet: " + local_path + ' ' + remote_path)
 
 		out = self.runCommand('scp -i ' + self.ssh_key + ' ' + local_path + ' root@' + self.ip_adress + ':' + remote_path)
@@ -218,6 +244,7 @@ class droplet_manager(object):
 			None
 		"""
 		logging.info("Downloading factorio server")
+		# TODO: Get link to latest version
 		self.downloadFileOnDroplet('https://www.factorio.com/get-download/0.12.33/headless/linux64', destination)
 
 
@@ -228,11 +255,16 @@ class droplet_manager(object):
 		Returns:
 			None
 		"""
+		# Download and extract headless factorio server
 		logging.info("Installing factorio headless server to " + destination)
 		self.downloadFactorioServer()
 
 		logging.info("Extracting factorio server")
 		self.extractArchive('/tmp/factorio.tar.gz', destination)
+
+		# Create user and chown directory
+		self.createUser(self.factorio_user)
+		self.chown(self.factorio_directory, self.factorio_user)
 
 
 
@@ -272,7 +304,16 @@ class droplet_manager(object):
 		"""
 		Create factorio init script with https://github.com/Bisa/factorio-init and create a config
 		"""
-		pass
+		# TODO: Create config file based on name/user for this factorio installation
+		self.changeFolder('/opt')
+		self.sshConnection.sendline('git clone https://github.com/Bisa/factorio-init.git')
+		self.sshConnection.prompt()
+		self.sshConnection.sendline('ln -s /opt/factorio-init/factorio /etc/init.d/factorio')
+		self.sshConnection.prompt()
+		self.sshConnection.sendline('chmod +x /opt/factorio-init/factorio')
+		self.sshConnection.prompt()
+		# TODO: Use systemd if possible
+
 
 
 	def getFactorioStatus(self):
@@ -388,7 +429,7 @@ if __name__ == '__main__':
 	if args.factorio_path:
 		factorio_directory = args.factorio_path
 
-	drop = droplet_manager(args.ip_address, args.ssh_key, factorio_directory)
+	drop = droplet_manager(args.ip_address, args.ssh_key)
 
 	if args.command == 'install_factorio':
 		drop.installFactorio()
@@ -400,12 +441,16 @@ if __name__ == '__main__':
 		drop.getSavegamesFromDroplet()
 
 	if args.command == 'download_save':
-		# TODO: Add optional argument to get save with different name
-		drop.downloadSavegameFromDroplet('factorio-init-save.zip')
+		name = 'factorio-init-save.zip'
+		if not args.command_command:
+			logging.info("No savegame name giving guessing factorio-init-save.zip")
+		else:
+			name = args.command_command
+		drop.downloadSavegameFromDroplet(name)
 
 	if args.command == 'uploadSave':
 		if not args.command_command:
-			logging.error("Need a command to send to factorio service (status, start, stop, getLog, loadSave)")
+			logging.error("Need path to a savegame")
 			sys.exit(0)
 
 		drop.uploadSavegameToDroplet(args.command_command)

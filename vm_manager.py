@@ -6,6 +6,8 @@ from time import strftime
 from datetime import datetime
 import digitalocean
 import sys
+from droplet_manager import droplet_manager
+
 try:
 	import keyring
 	keychain = True
@@ -194,7 +196,11 @@ if args.command == "start":
 	logging.info("Droplet ip adress:" + str(droplet.ip_address))
 
 	if args.create: # TODO: Install factorio + service on new droplet
-		pass
+		drop = droplet_manager(droplet.ip_address, 'DO_' + vm_name, )
+		drop.installFactorio()
+		drop.installFactorioService()
+
+		drop.sshExit()
 
 
 if args.command == "status":
