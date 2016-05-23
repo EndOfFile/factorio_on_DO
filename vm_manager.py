@@ -150,13 +150,13 @@ parser.add_argument(dest='apikey', type=str, nargs='?', help='Digitalocean API k
 parser.add_argument('-v', '--verbose', action='store_true', dest='verbose',
 					help="Print debug messages")
 parser.add_argument('-c', '--create', action='store_true', dest='create',
-                    help="If no ssh or droplet found create both")
+					help="If no ssh or droplet found create both")
 parser.add_argument('-ns', '--no-snapshot', action='store_true', dest='no_snapshot',
 					help="Save no snapshot when stopping droplet")
 parser.add_argument('-nd', '--no-destroy', action='store_true', dest='no_destroy',
 					help="Don't destroy droplet after stopping")
 parser.add_argument('-nc', '--no-cleanup', action='store_true', dest='no_cleanup',
-                    help="No snapshot cleanup")
+					help="No snapshot cleanup")
 
 args = parser.parse_args()
 
@@ -187,11 +187,13 @@ if args.command == "start":
 	actions = droplet.get_actions()
 	for action in actions:
 		action.load()
+		logging.info(str(action.status))
 		# Once it shows complete, droplet is up and running
 		while "progress" in action.status:
 			time.sleep(5)
 			action.load()
-			logging.info(str(action.status))
+			print ".",
+
 	droplet.load()
 	logging.info("Droplet ip adress:" + str(droplet.ip_address))
 
@@ -230,11 +232,12 @@ if args.command == "stop":
 		actions = factorio.get_actions()
 		for action in actions:
 			action.load()
+			logging.info(str(action.status))
 			# Once it shows complete, droplet is up and running
 			while "progress" in action.status:
 				time.sleep(5)
 				action.load()
-				logging.info(str(action.status))
+				print ".",
 
 	if not args.no_snapshot:
 		logging.info("TAKE SNAPSHOT")
@@ -242,11 +245,12 @@ if args.command == "stop":
 		actions = factorio.get_actions()
 		for action in actions:
 			action.load()
+			logging.info(str(action.status))
 			# Once it shows complete, droplet is up and running
 			while "progress" in action.status:
 				time.sleep(5)
 				action.load()
-				logging.info(action.status)
+				print ".",
 
 	if not args.no_destroy:
 		logging.info("DESTROY")
@@ -254,11 +258,12 @@ if args.command == "stop":
 		actions = factorio.get_actions()
 		for action in actions:
 			action.load()
+			logging.info(str(action.status))
 			# Once it shows complete, droplet is up and running
 			while "progress" in action.status:
 				time.sleep(5)
 				action.load()
-				logging.info(str(action.status))
+				print ".",
 
 	if not args.no_cleanup:
 		logging.info("CLEANING FACTORIO SNAPSHOTS")
