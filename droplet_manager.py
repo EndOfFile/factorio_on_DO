@@ -185,12 +185,14 @@ class droplet_manager(object):
 			url (str): Download URL
 			destination (str): Download destination on Droplet
 		"""
-		self.sshConnection.sendline('wget --no-check-certificate ' + url + ' -O ' + destination)
+		logging.debug("Downloading " + url + " to " + destination)
+		self.sshConnection.sendline('wget --no-check-certificate ' + url + ' -P ' + destination)
 		#FIXME: --no-check-certificate shouldn't be needed
 		self.sshConnection.prompt()
 		if 'ERROR' in self.sshConnection.before:
 			logging.error("Could not download file: " + url)
 			logging.debug(self.sshConnection.before)
+		logging.debug(self.sshConnection.before)
 
 	def downloadFileFromDroplet(self, remote_path):
 		"""
@@ -233,7 +235,7 @@ class droplet_manager(object):
 
 		return True
 
-	def downloadFactorioServer(self, destination='/tmp/factorio.tar.gz'):
+	def downloadFactorioServer(self, destination='/tmp'):
 		"""
 		Download and extract latest headless server
 
@@ -260,6 +262,7 @@ class droplet_manager(object):
 		self.downloadFactorioServer()
 
 		logging.info("Extracting factorio server")
+		#TODO: Check archive name
 		self.extractArchive('/tmp/factorio.tar.gz', destination)
 
 		# Create user and chown directory
@@ -436,6 +439,12 @@ if __name__ == '__main__':
 
 	if args.command == 'list_mods':
 		drop.getModListFromDroplet()
+
+	if args.command == 'get_mod':
+		if not args.command_command:
+			logging.error("Need url to mod")
+			sys.exit(0)
+		drop.uploadModFromUrlToDroplet(args.command_command)
 
 	if args.command == 'list_saves':
 		drop.getSavegamesFromDroplet()
