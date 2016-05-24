@@ -192,8 +192,7 @@ if args.command == "start":
 		while "progress" in action.status:
 			time.sleep(5)
 			action.load()
-			print ".",
-
+			logging.info(".")
 	droplet.load()
 	logging.info("Droplet ip adress:" + str(droplet.ip_address))
 
@@ -237,7 +236,7 @@ if args.command == "stop":
 			while "progress" in action.status:
 				time.sleep(5)
 				action.load()
-				print ".",
+				logging.info(".")
 
 	if not args.no_snapshot:
 		logging.info("TAKE SNAPSHOT")
@@ -250,7 +249,7 @@ if args.command == "stop":
 			while "progress" in action.status:
 				time.sleep(5)
 				action.load()
-				print ".",
+				logging.info(".")
 
 	if not args.no_destroy:
 		logging.info("DESTROY")
@@ -263,7 +262,7 @@ if args.command == "stop":
 			while "progress" in action.status:
 				time.sleep(5)
 				action.load()
-				print ".",
+				logging.info(".")
 
 	if not args.no_cleanup:
 		logging.info("CLEANING FACTORIO SNAPSHOTS")
